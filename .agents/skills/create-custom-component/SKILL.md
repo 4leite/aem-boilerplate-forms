@@ -11,12 +11,12 @@ Guide a developer through creating a custom form component end-to-end: scaffoldi
 
 ## Dependencies
 
-- **`knowledge/custom-form-components.md`** -- full architecture guide (MVC, folder structure, JSON schema, registration steps)
-- **`knowledge/form-field-types.md`** -- HTML structure and properties for every OOTB field type
-- **`knowledge/subscribe-api.md`** -- subscribe function API reference, three subscription patterns, migration examples
+- [Custom form components](../../../docs/custom-form-components.md) -- full architecture guide (MVC, folder structure, JSON schema, registration steps)
+- [Form field types](../../../docs/form-field-types.md) -- HTML structure and properties for every OOTB field type
+- [Subscribe API](../../../docs/subscribe-api.md) -- subscribe function API reference, three subscription patterns, migration examples
 - **`tools/scaffold-component.sh`** -- generates skeleton files
-- **`tools/validate-registration.js`** -- browser MCP diagnostic to verify the component loads
-- **Browser MCP tools** (optional) -- `cursor-ide-browser` or `cursor-browser-extension` for validation step
+- **`tools/validate-registration.js`** -- browser diagnostic to verify the component loads
+- **Browser tools** (optional) -- use the current client's available navigation and page JavaScript evaluation tools
 
 ---
 
@@ -40,7 +40,7 @@ Ask the developer:
 Run the scaffolding tool from the project root:
 
 ```bash
-bash .cursor/skills/create-custom-component/tools/scaffold-component.sh <name> <base-type>
+bash .agents/skills/create-custom-component/tools/scaffold-component.sh <name> <base-type>
 ```
 
 Supported base types: `text-input`, `number-input`, `drop-down`, `button`, `checkbox`, `radio-group`, `checkbox-group`, `panel`, `date-input`, `multiline-input`, `file-input`, `email`, `telephone-input`.
@@ -52,7 +52,7 @@ This creates:
 
 ### Step 3: Add custom properties to JSON schema
 
-Read `knowledge/custom-form-components.md` section "Defining New Properties for Custom Components".
+Read [custom-form-components.md](../../../docs/custom-form-components.md) section "Defining New Properties for Custom Components".
 
 Edit `_<name>.json` to add custom fields in the `models[0].fields` array. Reference shared field containers where possible:
 
@@ -64,9 +64,9 @@ Add only fields unique to this component explicitly.
 
 ### Step 4: Implement the `decorate` function
 
-Read `knowledge/form-field-types.md` to understand the base HTML structure the component receives in the `element` parameter.
+Read [form-field-types.md](../../../docs/form-field-types.md) to understand the base HTML structure the component receives in the `element` parameter.
 
-Read `knowledge/subscribe-api.md` to choose the right subscription pattern:
+Read [subscribe-api.md](../../../docs/subscribe-api.md) to choose the right subscription pattern:
 
 | If the component... | Use |
 |---------------------|-----|
@@ -74,7 +74,7 @@ Read `knowledge/subscribe-api.md` to choose the right subscription pattern:
 | Reacts to own field value/enum/visible changes | `{ listenChanges: true }` (recommended for all new components) |
 | Watches child items inside a panel | `{ listenChanges: true }` on parent + `subscribe()` on each child wrapper element |
 
-**All new components should use `{ listenChanges: true }`.** The generated JS already includes this boilerplate. For panel/container components with children, call `subscribe(childWrapper, formId, cb, { listenChanges: true })` for each child inside the parent's `'register'` callback. See `knowledge/subscribe-api.md` for the child pattern with selector guidance.
+**All new components should use `{ listenChanges: true }`.** The generated JS already includes this boilerplate. For panel/container components with children, call `subscribe(childWrapper, formId, cb, { listenChanges: true })` for each child inside the parent's `'register'` callback. See [subscribe-api.md](../../../docs/subscribe-api.md) for the child pattern with selector guidance.
 
 Key implementation points:
 - Access custom properties via `fieldJson.properties.<propName>`
@@ -110,17 +110,17 @@ npm run build:json
 
 This compiles and merges all component JSON definitions into the served schema.
 
-### Step 7: Validate (optional, requires browser MCP)
+### Step 7: Validate (optional, requires browser tools)
 
 Ask the developer: **"Do you have a running form URL where this component is being used? I can validate that it loads correctly."**
 
 If the developer provides a form URL:
 
-1. Navigate to the form URL using `browser_navigate`
+1. Discover the current client's available browser tools and navigate to the form URL
 2. Wait for the form to finish loading (look for the form element in the DOM)
-3. Read `tools/validate-registration.js` and inject it via `evaluate_script`, passing the component name as argument:
+3. Read `tools/validate-registration.js` and inject it using the available page JavaScript evaluation tool, passing the component name as argument:
    ```js
-   // In evaluate_script, call the function with the component name:
+   // In the page's JavaScript context, call the function with the component name:
    const validate = <contents of tools/validate-registration.js>;
    validate('<component-name>');
    ```
@@ -164,7 +164,7 @@ If the developer provides a form URL:
 
 **User**: "Create a custom slider component based on number-input that has min, max, and step properties"
 
-1. Scaffold: `bash tools/scaffold-component.sh custom-slider number-input`
+1. Scaffold: `bash .agents/skills/create-custom-component/tools/scaffold-component.sh custom-slider number-input`
 2. Edit `_custom-slider.json`: add `min`, `max`, `step` fields
 3. Edit `custom-slider.js`: create `<input type="range">`, wire `subscribe` to sync value
 4. Edit `custom-slider.css`: style the range input
